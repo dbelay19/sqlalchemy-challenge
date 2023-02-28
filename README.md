@@ -6,10 +6,11 @@
 * ![image](https://user-images.githubusercontent.com/117956888/221996599-4e64c236-cc19-4e84-a353-f02b9178d762.png)
 
 Bar plot of percipitation from the dataframe using  Pandas Plotting with Matplotlib 
-![image](https://user-images.githubusercontent.com/117956888/221996777-a61e8ce2-2358-4895-8db4-90e34984e167.png)
+![image](https://user-images.githubusercontent.com/117956888/222007550-65c40c45-9dfa-44ad-a0b0-1589b4d407e8.png)
+* It looks like the highest amout of percipitation is in August and April
 
 * Example of frequecy histogram of 12 months of temperature observation data for this station 
-![image](https://user-images.githubusercontent.com/117956888/221997327-fa50d9d8-453f-4d2c-931b-2893a6ef31e5.png)
+![image](https://user-images.githubusercontent.com/117956888/222007656-10c178e9-ad1a-4e91-bf7e-e98713cb4d62.png)
 
 # The 2nd part of the module challenge was to practice designing of our own climate App
 * For this task I worte the script in VSB text editor folowing the activity examples we had during our class. the activities include set up import functions, databse steup, falsk steup and flask routes.
