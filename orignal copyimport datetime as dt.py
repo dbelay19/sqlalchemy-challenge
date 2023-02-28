@@ -1,4 +1,3 @@
-# Setup import functions
 import datetime as dt
 import numpy as np
 from sqlalchemy.ext.automap import automap_base
@@ -21,8 +20,6 @@ Base.prepare(engine, reflect=True)
 Measurement = Base.classes.measurement
 Station = Base.classes.station
 
-session = Session(engine)
-
 #################################################
 # Flask Setup
 #################################################
@@ -41,8 +38,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/temp/start<br/>"
-        f"/api/v1.0/temp/start/end<br/>"
+        f"/api/v1.0/[start_date format:yyyy-mm-dd]<br/>"
+        f"/api/v1.0/[start_date format:yyyy-mm-dd]/[end_date format:yyyy-mm-dd]<br/>"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -58,7 +55,10 @@ def precipitation():
 
     session.close()
 
-     # Convert the list to Dictionary
+
+   
+    
+    # Convert the list to Dictionary
     all_prcp = []
     for date,prcp  in results:
         prcp_dict = {}
@@ -102,7 +102,9 @@ def tobs():
 
     session.close()
 
-       # Convert the list to Dictionary
+   
+
+    # Convert the list to Dictionary
     all_tobs = []
     for prcp, date,tobs in results:
         tobs_dict = {}
@@ -114,32 +116,54 @@ def tobs():
 
     return jsonify(all_tobs)
 
-@app.route("/api/v1.0/temp/<start>")
-@app.route("/api/v1.0/temp/<start>/<end>")
-def stats(start=None, end=None):
-    """Return TMIN, TAVG, TMAX."""
-    # Select statement
-    sel = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
-    if not end:
-        
-        start = dt.datetime.strptime(start, "%m%d%Y")
-        results = session.query(*sel).\
-            filter(Measurement.date >= start).all()
-        
-        session.close()
-        temps = list(np.ravel(results))
-        return jsonify(temps)
-    # calculate TMIN, TAVG, TMAX with start and stop
-    start = dt.datetime.strptime(start, "%m%d%Y")
-    end = dt.datetime.strptime(end, "%m%d%Y")
-    results = session.query(*sel).\
-        filter(Measurement.date >= start).\
-        filter(Measurement.date <= end).all()
-    session.close()
-    # Unravel results into a 1D array and convert to a list
-    temps = list(np.ravel(results))
-    return jsonify(temps=temps)
+    
+@app.route("/api/v1.0/<start_date>")
+def Start_date(start_date):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
 
+    """Return a list of min, avg and max tobs for a start date"""
+    # Query all tobs
+
+    results = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+                filter(Measurement.date >= start_date).all()
+    
+    session.close()
+    print(results)
+    # Create a dictionary from the row data and append to a list of start_date_tobs
+    start_date_tobs = []
+    for min, avg, max in results:
+        start_date_tobs_dict = {}
+        start_date_tobs_dict["min_temp"] = min
+        start_date_tobs_dict["avg_temp"] = avg
+        start_date_tobs_dict["max_temp"] = max
+        start_date_tobs.append(start_date_tobs_dict) 
+    return jsonify(start_date_tobs)
+
+@app.route("/api/v1.0/<start_date>/<end_date>")
+def Start_end_date(start_date, end_date):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    """Return a list of min, avg and max tobs for start and end dates"""
+    # Query all tobs
+
+    results = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+                filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).all()
+
+    session.close()
+  
+    # Create a dictionary from the row data and append to a list of start_end_date_tobs
+    start_end_tobs = []
+    for min, avg, max in results:
+        start_end_tobs_dict = {}
+        start_end_tobs_dict["min_temp"] = min
+        start_end_tobs_dict["avg_temp"] = avg
+        start_end_tobs_dict["max_temp"] = max
+        start_end_tobs.append(start_end_tobs_dict) 
+    
+
+    return jsonify(start_end_tobs)
 
 if __name__ == "__main__":
     app.run(debug=True)
